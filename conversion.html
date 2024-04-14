@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cryptocurrency Converter</title>
+    <link rel="stylesheet" href="conversion.css">
+</head>
+<body>
+    <div class="conversion-form">
+        <h2>Cryptocurrency Converter</h2>
+        <div class="form-group">
+            <label for="xrpAmount">Enter XRP Amount:</label>
+            <input type="number" id="xrpAmount" placeholder="Enter XRP amount">
+        </div>
+        <div class="form-group">
+            <label for="currency">Select Currency:</label>
+            <select id="currency">
+                <option value="USD">USD</option>
+                <option value="EURO">EURO</option>
+                <option value="GBP">GBP</option>
+            </select>
+        </div>
+        <button onclick="convert()">Convert</button>
+        <div id="conversion-result"></div>
+        <button onclick="redirectToPayment()">Make Payment</button>    
+    </div>
+
+    <script>
+        function convert() {
+            var xrpAmount = parseFloat(document.getElementById('xrpAmount').value);
+            var currency = document.getElementById('currency').value;
+            var conversionRate;
+
+            // Real-time exchange rates obtained from a reliable source
+            var exchangeRates = {
+                "USD": 67059.155,
+                "EURO": 62918.252,
+                "GBP": 53832.541
+            };
+
+            // Check if selected currency is supported
+            if (currency in exchangeRates) {
+                conversionRate = exchangeRates[currency];
+                var convertedAmount = xrpAmount * (1 / 127794.085) * conversionRate;
+
+                var resultDiv = document.getElementById('conversion-result');
+                resultDiv.innerHTML = 'Converted Amount: ' + convertedAmount.toFixed(2) + ' ' + currency;
+
+                // Store converted amount in session storage for access on other pages
+                sessionStorage.setItem('convertedAmount', convertedAmount.toFixed(2));
+            } else {
+                alert('Selected currency is not supported.');
+            }
+        }
+
+        function redirectToPayment() {
+            // Retrieve converted amount from session storage
+            var convertedAmount = sessionStorage.getItem('convertedAmount');
+
+            // Redirect to payment page with converted amount as a parameter in the URL
+            window.location.href = 'payment.html?amount=' + convertedAmount;
+        }
+    </script>
+</body>
+</html>

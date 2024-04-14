@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Page</title>
+    <link rel="stylesheet" href="payment.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Include Chart.js library -->
+</head>
+<body>
+    <div class="payment-container">
+        <h2>Make Payment</h2>
+        <div id="payment-amount"></div>
+        <div id="categories">
+        <div class="category">
+            <label for="food">Food:</label>
+            <input type="number" id="food" min="0">
+        </div>
+        <div class="category">
+            <label for="clothes">Clothes:</label>
+            <input type="number" id="clothes" min="0">
+        </div>
+        <div class="category">
+            <label for="school-fees">School Fees:</label>
+            <input type="number" id="school-fees" min="0">
+        </div>
+        <div class="category">
+            <label for="rent">Rent:</label>
+            <input type="number" id="rent" min="0">
+        </div>
+        <div class="category">
+            <label for="health-care">Health Care:</label>
+            <input type="number" id="health-care" min="0">
+        </div>
+        <div id="payment-pie-chart-container">
+            <canvas id="payment-pie-chart"></canvas> <!-- Canvas for the pie chart -->
+        </div>
+        <button onclick="makePayment()">Make Payment</button>
+    </div>
+
+    <script>
+        window.onload = function() {
+            // Retrieve converted amount from URL parameter
+            var urlParams = new URLSearchParams(window.location.search);
+            var amount = parseFloat(urlParams.get('amount'));
+
+            if (amount && amount >= 0) {
+                var paymentAmountDiv = document.getElementById('payment-amount');
+                paymentAmountDiv.innerHTML = 'Account Balance: $' + amount.toFixed(2);
+
+                // Store account balance in session storage
+                sessionStorage.setItem('accountBalance', amount.toFixed(2));
+            } else {
+                // If amount is not provided in the URL parameter or negative, display an error message
+                alert('Invalid account balance. Please go back to the conversion page to convert XRP to make a payment.');
+                window.location.href = 'conversion.html'; // Redirect to the conversion page
+            }
+        };
+
+        function makePayment() {
+            // Retrieve account balance from session storage
+            var accountBalance = parseFloat(sessionStorage.getItem('accountBalance'));
+
+            // Calculate total payment and deduct from account balance
+            var totalPayment = 0;
+            var categories = document.querySelectorAll('.category');
+            categories.forEach(function(category) {
+                var amount = parseFloat(category.querySelector('input').value);
+                totalPayment += amount;
+            });
+
+            // Calculate interest (assuming 5% interest rate)
+            var interest = totalPayment * 0.05;
+
+            // Check if account balance will remain positive after payment
+            if (accountBalance - totalPayment - interest >= 0) {
+                // Deduct total payment and interest from account balance
+                accountBalance -= (totalPayment + interest);
+                sessionStorage.setItem('accountBalance', accountBalance.toFixed(2));
+
+                // Update payment amount div with remaining balance
+                var paymentAmountDiv = document.getElementById('payment-amount');
+                paymentAmountDiv.innerHTML = 'Remaining Balance: $' + accountBalance.toFixed(2);
+
+                // Alert payment success message
+                alert('Payment successful!\nTotal Payment: $' + totalPayment.toFixed(2) + '\nInterest: $' + interest.toFixed(2) + '\nRemaining Balance: $' + accountBalance.toFixed(2));
+
+                // Create pie chart
+                createPieChart();
+            } else {
+                // If account balance will fall below zero, display an error message
+                alert('Insufficient funds. Please enter a lower payment amount.');
+            }
+        }
+
+        function createPieChart() {
+            var categories = document.querySelectorAll('.category');
+            var labels = [];
+            var data = [];
+
+            categories.forEach(function(category) {
+                var label = category.querySelector('label').textContent.replace(':', '');
+                var amount = parseFloat(category.querySelector('input').value);
+
+                if (amount > 0) {
+                    labels.push(label);
+                    data.push(amount);
+                }
+            });
+
+            var ctx = document.getElementById('payment-pie-chart').getContext('2d');
+            var paymentPieChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                            'rgba(255, 159, 64, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        }
+    </script>
+</body>
+</html>

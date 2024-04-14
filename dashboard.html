@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Wallet</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <!-- TradingView Charting Library -->
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <!-- Web3.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.3/dist/web3.min.js"></script>
+</head>
+<body>
+    <div class="wallet">
+        <div class="wallet-header">
+            <h2>My Crypto Wallet</h2>
+        </div>
+        <div class="wallet-content">
+            <div class="wallet-balance">
+                <h3>Wallet Balance</h3>
+                <p id="wallet-balance">Loading...</p> <!-- Display wallet balance here -->
+            </div>
+            <div class="wallet-address">
+                <h3>Wallet Address</h3>
+                <p id="wallet-address">0x7b67E7Bfcdcf9C4a66e47A84775591732c283917</p>
+            </div>
+            <div class="xrp-price">
+                <h3>XRP Price (USD)</h3>
+                <p id="xrp-price">Loading...</p>
+            </div>
+            <div id="tradingview-widget-container"></div>
+            <a href="conversion.html" class="pay-button">Pay</a>
+        </div>
+    </div>
+    <script src="wallet.js"></script>
+    <script>
+        
+        async function fetchWalletBalance(walletAddress) {
+  const proxyUrl = 'http://localhost:8080/'; // Proxy server URL
+  const apiUrl = `https://data.ripple.com/v2/accounts/${walletAddress}/balances`;
+  try {
+    const response = await fetch(proxyUrl + apiUrl);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`HTTP error ${response.status}: ${errorData.error || 'Unknown error'}`);
+    }
+    const data = await response.json();
+    // Extract XRP balance from the response data
+    const xrpBalance = data.balances.find(balance => balance.currency === 'XRP');
+    if (!xrpBalance) {
+      throw new Error('XRP balance not found in the response');
+    }
+    return xrpBalance.value;
+  } catch (error) {
+    console.error('Error fetching wallet balance:', error);
+    throw error;
+  }
+}
+
+        async function displayWalletBalance() {
+            const walletAddress = document.getElementById('wallet-address').textContent.trim();
+            try {
+                const balance = await fetchWalletBalance(walletAddress);
+                document.getElementById('wallet-balance').textContent = balance + ' XRP';
+            } catch (error) {
+                document.getElementById('wallet-balance').textContent = `Error: ${error.message}`;
+            }
+        }
+        // Fetch and display the wallet balance when the page loads
+        window.onload = function() {
+            console.log('Page loaded');
+            displayWalletBalance();
+            //initTradingViewWidget();
+        };
+
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>
